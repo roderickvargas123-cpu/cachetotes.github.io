@@ -59,7 +59,7 @@
       box-sizing: border-box;
 
       /* La foto que irá dentro del corazón */
-      background-image: var(--img);
+      background-image: url("ajjajaja-removebg-preview.png");
       background-size: cover;
       /* subimos un poco el encuadre para que no se corte la cara */
       background-position: 50% 18%;
@@ -182,6 +182,7 @@
     // ===== Corazones flotantes con la foto de la niña =====
     // 1) Sube al repo una imagen llamada: nina.png (PNG recomendado)
     // 2) Si tu archivo tiene otro nombre, cámbialo aquí:
+    // Si quieres cambiar la imagen de los corazones, cambia el nombre aquí Y también en el CSS (background-image)
     const FOTO_CORAZON = "ajjajaja-removebg-preview.png";
 
     const layer = document.getElementById("heartsLayer");
@@ -189,8 +190,6 @@
     function spawnHeart(){
       const h = document.createElement("div");
       h.className = "photo-heart";
-      h.style.setProperty("--img", `url('${FOTO_CORAZON}')`);
-
       // tamaño
       const size = 80 + Math.random()*70; // 80..150 (más grande para que no se corte la cara)
       h.style.width = size + "px";
