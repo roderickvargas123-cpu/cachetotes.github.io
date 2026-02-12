@@ -75,25 +75,6 @@
       animation: floatUp linear forwards;
     }
 
-
-    /* ===== Explosión caótica de corazones ===== */
-    .chaos-heart{
-      animation: chaosBurst linear forwards;
-      will-change: transform, opacity;
-      opacity: 1;
-    }
-
-    @keyframes chaosBurst{
-      from{
-        transform: translate(var(--sx), var(--sy)) rotate(var(--r0)) scale(var(--sc0));
-        opacity: 1;
-      }
-      to{
-        transform: translate(var(--ex), var(--ey)) rotate(var(--r1)) scale(var(--sc1));
-        opacity: 0;
-      }
-    }
-
     @keyframes floatUp{
       from{
         transform: translateY(110vh) translateX(var(--x0)) rotate(var(--r0));
@@ -184,6 +165,62 @@
     font-size:13px;
     color: rgba(255,255,255,0.55);
   }
+
+    /* === Explosión de texto + partículas (corazones/rosas/formas) === */
+    #particlesLayer{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index:9999;
+    }
+    .floatParticle{
+      position:absolute;
+      will-change: transform, opacity;
+      user-select:none;
+      font-size:22px;
+      opacity:0.95;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+    }
+    .shapeParticle{
+      width:14px;
+      height:14px;
+      border-radius:4px;
+      background:rgba(255,255,255,.9);
+      box-shadow:0 6px 14px rgba(0,0,0,.35);
+    }
+    .shapeCircle{ border-radius:999px; }
+    .shapeDiamond{ transform: rotate(45deg); }
+    .shapeTriangle{
+      width:0;height:0;
+      border-left:9px solid transparent;
+      border-right:9px solid transparent;
+      border-bottom:16px solid rgba(255,255,255,.9);
+      background:transparent;
+      box-shadow:none;
+    }
+    @keyframes flyOut{
+      0%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); opacity:1; }
+      100%{ transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--dr)) scale(var(--ds)); opacity:0; }
+    }
+    @keyframes screenShake{
+      0%{ transform: translate3d(0,0,0); }
+      20%{ transform: translate3d(-6px, 3px, 0); }
+      40%{ transform: translate3d(7px, -5px, 0); }
+      60%{ transform: translate3d(-4px, -3px, 0); }
+      80%{ transform: translate3d(6px, 6px, 0); }
+      100%{ transform: translate3d(0,0,0); }
+    }
+    .shake{
+      animation: screenShake 0.25s linear infinite;
+    }
+    /* Texto final en spans para explotar */
+    #finalText .char{
+      display:inline-block;
+      white-space:pre;
+      will-change: transform, opacity;
+    }
+
 </style>
 </head>
 
@@ -223,9 +260,8 @@
     document.getElementById("heartsLayer").style.opacity = "0";
     document.getElementById("finalText").innerText = FINAL_TEXT;
     document.getElementById("finalScreen").classList.add("active");
-
-    // 20 segundos después de que salga el cuadro final: explosión caótica de corazones
-    setTimeout(explodeHearts, 20000);
+    prepareFinalTextSpans();
+    scheduleFinalExplosion();
   }, 5000);
 }
 
@@ -242,79 +278,6 @@
     const FOTO_CORAZON = "ajjajaja-removebg-preview.png";
 
     const layer = document.getElementById("heartsLayer");
-
-    // ===== Explosión de corazones caótica (se activa 20s después del cuadro final) =====
-    let chaosStormInterval = null;
-
-    function spawnChaosHeart(){
-      const h = document.createElement("div");
-      h.className = "photo-heart chaos-heart";
-      h.style.setProperty("--img", `url('${FOTO_CORAZON}')`);
-
-      // tamaño (más variado para que se vea caótico)
-      const size = 40 + Math.random()*220; // 40..260
-      h.style.width = size + "px";
-      h.style.height = size + "px";
-
-      // ancla en cualquier parte de la pantalla
-      const x = Math.random()*100;
-      const y = Math.random()*100;
-      h.style.left = x + "vw";
-      h.style.top  = y + "vh";
-
-      // movimiento caótico (usa vw/vh para abarcar toda la pantalla)
-      const ex = (Math.random()*140 - 70).toFixed(2) + "vw";  // -70..70vw
-      const ey = (Math.random()*160 - 80).toFixed(2) + "vh";  // -80..80vh
-      h.style.setProperty("--sx", "0vw");
-      h.style.setProperty("--sy", "0vh");
-      h.style.setProperty("--ex", ex);
-      h.style.setProperty("--ey", ey);
-
-      // rotación fuerte
-      const r0 = (Math.random()*360) + "deg";
-      const r1 = (Math.random()*1440 - 720) + "deg";
-      h.style.setProperty("--r0", r0);
-      h.style.setProperty("--r1", r1);
-
-      // escala
-      h.style.setProperty("--sc0", (0.4 + Math.random()*0.9).toFixed(2));
-      h.style.setProperty("--sc1", (0.2 + Math.random()*1.8).toFixed(2));
-
-      // duración
-      const dur = 0.8 + Math.random()*2.2; // 0.8..3.0s
-      h.style.animationDuration = dur + "s";
-
-      // opacidad inicial
-      h.style.opacity = (0.75 + Math.random()*0.25).toFixed(2);
-
-      layer.appendChild(h);
-      setTimeout(() => h.remove(), dur*1000 + 150);
-    }
-
-    function explodeHearts(){
-      // Asegura que la capa de corazones se vea (por encima de todo)
-      const hl = document.getElementById("heartsLayer");
-      hl.style.opacity = "1";
-      hl.style.zIndex = "10000";
-
-      // Primer “boom” súper denso
-      for(let i=0;i<220;i++){
-        setTimeout(spawnChaosHeart, i*12);
-      }
-
-      // Tormenta caótica por unos segundos
-      if(chaosStormInterval) clearInterval(chaosStormInterval);
-      chaosStormInterval = setInterval(() => {
-        for(let k=0;k<10;k++) spawnChaosHeart();
-      }, 120);
-
-      // Se apaga sola para no saturar el navegador
-      setTimeout(() => {
-        if(chaosStormInterval) clearInterval(chaosStormInterval);
-        chaosStormInterval = null;
-      }, 7000);
-    }
-
 
     function spawnHeart(){
       const h = document.createElement("div");
@@ -358,6 +321,212 @@
     }
     // continuo
     const heartInterval = setInterval(spawnHeart, 280);
+  
+    // ===== Explosión del texto en corazones/rosas/formas =====
+    let finalExplosionTimer = null;
+    let chaosTimer = null;
+
+    function prepareFinalTextSpans(){
+      const el = document.getElementById("finalText");
+      if(!el) return;
+
+      // Evitar re-preparar
+      if(el.querySelector(".char")) return;
+
+      const text = el.innerText || "";
+      el.innerHTML = "";
+      for(const ch of text){
+        const span = document.createElement("span");
+        span.className = "char";
+        span.textContent = ch;
+        el.appendChild(span);
+      }
+    }
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnEmojiParticle(x, y, emoji){
+      const layer = document.getElementById("particlesLayer");
+      if(!layer) return;
+
+      const p = document.createElement("span");
+      p.className = "floatParticle";
+      p.textContent = emoji;
+
+      p.style.left = x + "px";
+      p.style.top  = y + "px";
+
+      const dx = rand(-260, 260) + "px";
+      const dy = rand(-320, -40) + "px";
+      const dr = rand(-540, 540) + "deg";
+      const ds = rand(0.7, 1.7);
+
+      p.style.setProperty("--dx", dx);
+      p.style.setProperty("--dy", dy);
+      p.style.setProperty("--dr", dr);
+      p.style.setProperty("--ds", ds);
+
+      const dur = rand(900, 1800);
+      p.style.animation = `flyOut ${dur}ms cubic-bezier(.2,.9,.2,1) forwards`;
+
+      layer.appendChild(p);
+      setTimeout(() => p.remove(), dur + 200);
+    }
+
+    function spawnShapeParticle(x, y){
+      const layer = document.getElementById("particlesLayer");
+      if(!layer) return;
+
+      const kind = Math.random();
+      const p = document.createElement("div");
+      p.className = "floatParticle shapeParticle";
+
+      if(kind < 0.33) p.classList.add("shapeCircle");
+      else if(kind < 0.66) p.classList.add("shapeDiamond");
+      else {
+        // triángulo
+        p.classList.remove("shapeParticle");
+        p.classList.add("shapeTriangle");
+      }
+
+      // Colores suaves (no depende de imágenes)
+      const colors = [
+        "rgba(255,255,255,.9)",
+        "rgba(255,105,180,.9)",
+        "rgba(255,215,0,.9)",
+        "rgba(173,216,230,.9)",
+        "rgba(144,238,144,.9)"
+      ];
+      if(!p.classList.contains("shapeTriangle")){
+        p.style.background = colors[(Math.random()*colors.length)|0];
+      }else{
+        p.style.borderBottomColor = colors[(Math.random()*colors.length)|0];
+      }
+
+      p.style.left = x + "px";
+      p.style.top  = y + "px";
+
+      const dx = rand(-320, 320) + "px";
+      const dy = rand(-360, -80) + "px";
+      const dr = rand(-720, 720) + "deg";
+      const ds = rand(0.6, 1.8);
+
+      p.style.setProperty("--dx", dx);
+      p.style.setProperty("--dy", dy);
+      p.style.setProperty("--dr", dr);
+      p.style.setProperty("--ds", ds);
+
+      const dur = rand(900, 2000);
+      p.style.animation = `flyOut ${dur}ms cubic-bezier(.2,.9,.2,1) forwards`;
+
+      layer.appendChild(p);
+      setTimeout(() => p.remove(), dur + 200);
+    }
+
+    function burstFromElement(el){
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
+
+      const emojis = ["💖","💗","💘","❤️","💕","🌹","✨","💞"];
+      for(let i=0;i<220;i++){
+        const x = cx + rand(-rect.width/2, rect.width/2);
+        const y = cy + rand(-rect.height/2, rect.height/2);
+        if(Math.random() < 0.82){
+          spawnEmojiParticle(x, y, emojis[(Math.random()*emojis.length)|0]);
+        }else{
+          spawnShapeParticle(x, y);
+        }
+      }
+    }
+
+    function explodeTextToHearts(){
+      const textEl = document.getElementById("finalText");
+      if(!textEl) return;
+
+      // temblor épico
+      document.body.classList.add("shake");
+
+      // Explosión del texto: cada letra sale volando
+      const chars = Array.from(textEl.querySelectorAll(".char"));
+      const rect = textEl.getBoundingClientRect();
+      const baseX = rect.left;
+      const baseY = rect.top;
+
+      const emojis = ["💖","💗","💘","❤️","💕","🌹","✨","💞"];
+
+      chars.forEach((chEl) => {
+        const r = chEl.getBoundingClientRect();
+        const x = r.left + r.width/2;
+        const y = r.top + r.height/2;
+
+        // Partículas por letra
+        const n = 3 + ((Math.random()*3)|0);
+        for(let i=0;i<n;i++){
+          if(Math.random() < 0.78){
+            spawnEmojiParticle(x, y, emojis[(Math.random()*emojis.length)|0]);
+          }else{
+            spawnShapeParticle(x, y);
+          }
+        }
+
+        // Animación de la letra
+        const dx = rand(-280, 280) + "px";
+        const dy = rand(-320, -60) + "px";
+        const dr = rand(-540, 540) + "deg";
+        const ds = rand(0.2, 1.2);
+
+        chEl.style.setProperty("--dx", dx);
+        chEl.style.setProperty("--dy", dy);
+        chEl.style.setProperty("--dr", dr);
+        chEl.style.setProperty("--ds", ds);
+        chEl.style.animation = `flyOut ${rand(900, 1600)}ms cubic-bezier(.2,.9,.2,1) forwards`;
+      });
+
+      // Explosión extra desde el cuadro
+      burstFromElement(document.getElementById("finalBox") || textEl);
+
+      // Tormenta caótica por toda la pantalla durante unos segundos
+      const durationMs = 7000;
+      const start = Date.now();
+
+      chaosTimer = setInterval(() => {
+        const now = Date.now();
+        if(now - start > durationMs){
+          clearInterval(chaosTimer);
+          chaosTimer = null;
+          setTimeout(() => document.body.classList.remove("shake"), 300);
+          return;
+        }
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const emojis2 = ["💖","💗","💘","❤️","💕","🌹","✨","💞"];
+
+        // densidad por tick
+        for(let i=0;i<20;i++){
+          const x = rand(0, w);
+          const y = rand(0, h);
+          if(Math.random() < 0.85){
+            spawnEmojiParticle(x, y, emojis2[(Math.random()*emojis2.length)|0]);
+          }else{
+            spawnShapeParticle(x, y);
+          }
+        }
+      }, 60);
+
+      // Al final, vaciar el texto (opcional) para que se vea que "se desintegró"
+      setTimeout(() => { if(textEl) textEl.innerHTML = ""; }, 1600);
+    }
+
+    function scheduleFinalExplosion(){
+      // limpia timers previos
+      if(finalExplosionTimer) clearTimeout(finalExplosionTimer);
+      finalExplosionTimer = setTimeout(() => {
+        prepareFinalTextSpans();
+        explodeTextToHearts();
+      }, 20000); // 20 segundos después de que aparezca el cuadro final
+    }
+
   </script>
 
 
@@ -369,5 +538,7 @@
     <div class="hint">CHICHI</div>
   </div>
 </div>
+
+  <div id="particlesLayer"></div>
 </body>
 </html>
