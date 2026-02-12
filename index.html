@@ -286,6 +286,22 @@
     document.getElementById("nombre").innerText = "Hola " + NOMBRE_DE_TU_NOVIA + "🌚";
 
                function aceptar(){
+
+  // 🎵 Música romántica
+  const music = document.getElementById("bgMusic");
+  music.volume = 0;
+  music.play().catch(()=>{});
+
+  let vol = 0;
+  const fade = setInterval(() => {
+    if (vol < 0.25) {
+      vol += 0.01;
+      music.volume = vol;
+    } else {
+      clearInterval(fade);
+    }
+  }, 200);
+
   document.getElementById("mensaje").style.display="block";
   document.getElementById("noBtn").style.display="none";
 
@@ -576,5 +592,11 @@
 </div>
 
   <div id="particlesLayer"></div>
+
+<!-- 🎵 Música de fondo -->
+<audio id="bgMusic" loop>
+  <source src="alban_gogh-quot-crescendo-quot-483243.mp3" type="audio/mpeg">
+</audio>
+
 </body>
 </html>
