@@ -114,37 +114,57 @@
     .yes{ background:#ff4d6d; color:white; }
     .no{ background:#ddd; position:relative; }
   
-    /* ===== EXPLOSION OVERLAY ===== */
-    #explosionScreen{
-      position:fixed;
-      inset:0;
-      background:black;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      opacity:0;
-      pointer-events:none;
-      z-index:9999;
-      transition: opacity 1s ease;
-    }
+    /* ===== PANTALLA FINAL ===== */
+  #finalScreen{
+    position:fixed;
+    inset:0;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    opacity:0;
+    pointer-events:none;
+    z-index:9999;
+    transition: opacity 0.6s ease;
+  }
+  #finalScreen.active{
+    opacity:1;
+    pointer-events:all;
+  }
 
-    #explosionScreen.active{
-      opacity:1;
-      pointer-events:all;
-    }
-
-    .explode-heart{
-      width:200px;
-      animation: boom 1.2s ease forwards;
-    }
-
-    @keyframes boom{
-      0%{ transform:scale(0.5); opacity:0; }
-      40%{ transform:scale(1.2); opacity:1; }
-      70%{ transform:scale(3); opacity:1; }
-      100%{ transform:scale(5); opacity:0; }
-    }
-
+  .final-card{
+    width:min(92vw,520px);
+    border-radius:26px;
+    padding:26px 22px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 105, 180, 0.65);
+    box-shadow:
+      0 0 0 6px rgba(255,105,180,.08),
+      0 20px 60px rgba(0,0,0,.65),
+      0 0 35px rgba(255,105,180,.25);
+    color:#fff;
+    text-align:center;
+  }
+  .final-card h2{
+    margin:0 0 10px;
+    font-size:28px;
+    letter-spacing:0.5px;
+    color:#ff7abf;
+    text-shadow: 0 0 18px rgba(255,105,180,.35);
+  }
+  .final-card p{
+    margin:0;
+    font-size:18px;
+    line-height:1.45;
+    color: rgba(255,255,255,0.92);
+  }
+  .final-card .hint{
+    margin-top:14px;
+    font-size:13px;
+    color: rgba(255,255,255,0.55);
+  }
 </style>
 </head>
 
@@ -170,15 +190,22 @@
 
   <script>
     const NOMBRE_DE_TU_NOVIA = "Cachetona";
+    const FINAL_TEXT = "Te amo mucho mi cachetonaa, gracias por ser la mejor novia del mundo mundial, espero que te guste esta sorpresa que hice con mucho amor para ti, eres lo mejor que me ha pasado en la vida y quiero seguir sorprendiéndote cada día más, te amo con todo mi corazon de vdd cachetona, y quiero seguir demostrandotelo con cada dia que pasemos juntos, en vdd empece a hacer esto antes de ayer pero me esforce mucho para que quedara bonito y espero que te guste, gracias por ser tan linda novia, y tan linda persona, no solo conmigo, tambien con los que te rodean, TE AMO TE AMO ❤";
     document.getElementById("nombre").innerText = "Hola " + NOMBRE_DE_TU_NOVIA + "🌚";
 
-    function aceptar(){
-      setTimeout(() => {
-        document.getElementById("explosionScreen").classList.add("active");
-      }, 10000);
-      document.getElementById("mensaje").style.display="block";
-      document.getElementById("noBtn").style.display="none";
-    }
+               function aceptar(){
+  document.getElementById("mensaje").style.display="block";
+  document.getElementById("noBtn").style.display="none";
+
+  // En 5 segundos: pantalla negra + cuadro rosa + texto
+  setTimeout(() => {
+    // detener corazones para que quede limpio
+    try{ clearInterval(heartInterval); }catch(e){}
+    document.getElementById("heartsLayer").style.opacity = "0";
+    document.getElementById("finalText").innerText = FINAL_TEXT;
+    document.getElementById("finalScreen").classList.add("active");
+  }, 5000);
+}
 
     function mover(){
       let btn=document.getElementById("noBtn");
@@ -235,14 +262,17 @@
       setTimeout(spawnHeart, i*120);
     }
     // continuo
-    setInterval(spawnHeart, 280);
+    const heartInterval = setInterval(spawnHeart, 280);
   </script>
 
 
-  <!-- Explosion Screen -->
-  <div id="explosionScreen">
-    <img src="1000091406.png" class="explode-heart" alt="boom">
+               <!-- Pantalla final -->
+<div id="finalScreen" role="dialog" aria-modal="true" aria-label="Mensaje final">
+  <div class="final-card">
+    <h2>💖</h2>
+    <p id="finalText">...</p>
+    <div class="hint">Recarga la página para volver a ver todo.</div>
   </div>
-
+</div>
 </body>
 </html>
