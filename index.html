@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Be My Valentine🌚💖</title>
+  <style>
+    /* Fondo con imagen + blur (sin afectar el contenido) */
+    body{
+      margin:0;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-family:sans-serif;
+      text-align:center;
+      overflow:hidden;
+      position:relative;
+    }
+    body::before{
+      content:"";
+      position:absolute;
+      inset:-20px; /* un poquito más grande para que el blur no deje bordes */
+      background-image:url("file:///C:/Users/papi/Downloads/Cachetonaa.jpeg"); /* <-- PON AQUÍ tu imagen de fondo */
+      background-size:cover;
+      background-position:center;
+      filter: blur(8px);
+      transform: scale(1.06);
+      opacity:0.95;
+      z-index:0;
+    }
+    body::after{
+      /* capa suave rosada encima para que se vea más “romántico” */
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg, rgba(255,154,158,.55), rgba(250,208,196,.55));
+      z-index:1;
+    }
+
+    .card{
+      position:relative;
+      z-index:2;
+      background:white;
+      padding:30px;
+      border-radius:20px;
+      box-shadow:0 10px 25px rgba(0,0,0,.2);
+      max-width:420px;
+      width:min(92vw,420px);
+    }
+    .foto{
+      width:160px;
+      height:auto;
+      border-radius:18px;
+      margin:0 auto 14px;
+      display:block;
+      box-shadow:0 10px 20px rgba(0,0,0,.15);
+    }
+    button{
+      padding:10px 20px;
+      font-size:18px;
+      margin:10px;
+      border:none;
+      border-radius:20px;
+      cursor:pointer;
+    }
+    .yes{
+      background:#ff4d6d;
+      color:white;
+    }
+    .no{
+      background:#ddd;
+      position:relative;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <!-- Segunda imagen (la que quieres mostrar dentro del cuadrito) -->
+    <img class="foto" src="file:///C:/Users/papi/Downloads/ajjajaja.jpeg" alt="ajjajaja" />
+    <!-- ^^^ Cambia el nombre del archivo si tu imagen se llama distinto -->
+
+    <h1>Be My Valentine🌚💖</h1>
+    <p id="nombre">Porfavor cachetona</p>
+
+    <button class="yes" onclick="aceptar()">
+      Sí 💘
+    </button>
+
+    <button class="no" id="noBtn" onmouseover="mover()">
+      No 💩
+    </button>
+
+    <p id="mensaje" style="display:none;font-size:20px;color:#ff4d6d;font-weight:bold;">
+      TE AMO CACHETONA 😍
+    </p>
+  </div>
+
+  <script>
+    const NOMBRE_DE_TU_NOVIA = "Cachetona"; //
+    document.getElementById("nombre").innerText = "Hola " + NOMBRE_DE_TU_NOVIA + "🌚";
+
+    function aceptar(){
+      document.getElementById("mensaje").style.display="block";
+      document.getElementById("noBtn").style.display="none";
+    }
+
+    function mover(){
+      let btn=document.getElementById("noBtn");
+      btn.style.position="absolute";
+      btn.style.top=(Math.random()*220)+"px";
+      btn.style.left=(Math.random()*220)+"px";
+    }
+  </script>
+
+</body>
+</html>
