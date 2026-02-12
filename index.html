@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Be My Valentine🌚💖</title>
+
   <style>
     /* Fondo con imagen + blur (sin afectar el contenido) */
     body{
@@ -21,7 +22,7 @@
       content:"";
       position:absolute;
       inset:-20px; /* un poquito más grande para que el blur no deje bordes */
-      background-image:url("Cachetonaa.jpeg"); /* <-- PON AQUÍ tu imagen de fondo */
+      background-image:url("Cachetonaa.jpeg"); /* imagen de fondo (súbela al repo) */
       background-size:cover;
       background-position:center;
       filter: blur(8px);
@@ -38,9 +39,54 @@
       z-index:1;
     }
 
+    /* ===== Corazones flotantes con foto ===== */
+    #heartsLayer{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index:2; /* detrás del cuadro blanco */
+    }
+
+    .photo-heart{
+      position:absolute;
+      width:70px;
+      height:70px;
+      opacity:0.9;
+
+      /* La foto que irá dentro del corazón */
+      background-image: var(--img);
+      background-size: cover;
+      background-position: center;
+
+      /* Forma de corazón (mask SVG) */
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 58s-5-3.4-10.7-8.4C13 42.6 6 35.6 6 26.2 6 18.2 12 12 20 12c5.1 0 9.2 2.6 12 6.2C34.8 14.6 38.9 12 44 12c8 0 14 6.2 14 14.2 0 9.4-7 16.4-15.3 23.4C37 54.6 32 58 32 58z'/%3E%3C/svg%3E");
+      -webkit-mask-size: cover;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 58s-5-3.4-10.7-8.4C13 42.6 6 35.6 6 26.2 6 18.2 12 12 20 12c5.1 0 9.2 2.6 12 6.2C34.8 14.6 38.9 12 44 12c8 0 14 6.2 14 14.2 0 9.4-7 16.4-15.3 23.4C37 54.6 32 58 32 58z'/%3E%3C/svg%3E");
+      mask-size: cover;
+      mask-repeat: no-repeat;
+      mask-position: center;
+
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
+      animation: floatUp linear forwards;
+    }
+
+    @keyframes floatUp{
+      from{
+        transform: translateY(110vh) translateX(var(--x0)) rotate(var(--r0));
+      }
+      to{
+        transform: translateY(-120px) translateX(var(--x1)) rotate(var(--r1));
+      }
+    }
+
+    /* ===== Tarjeta principal ===== */
     .card{
       position:relative;
-      z-index:2;
+      z-index:3; /* encima de los corazones */
       background:white;
       padding:30px;
       border-radius:20px;
@@ -64,34 +110,25 @@
       border-radius:20px;
       cursor:pointer;
     }
-    .yes{
-      background:#ff4d6d;
-      color:white;
-    }
-    .no{
-      background:#ddd;
-      position:relative;
-    }
+    .yes{ background:#ff4d6d; color:white; }
+    .no{ background:#ddd; position:relative; }
   </style>
 </head>
 
 <body>
 
+  <!-- Corazones flotantes -->
+  <div id="heartsLayer" aria-hidden="true"></div>
+
   <div class="card">
-    <!-- Segunda imagen (la que quieres mostrar dentro del cuadrito) -->
-    <img class="foto" src="ajjajaja-removebg-preview.png" alt="ajjajaja-removebg-preview" />
-    <!-- ^^^ Cambia el nombre del archivo si tu imagen se llama distinto -->
+    <!-- Imagen del cuadro (si quieres quitarla, borra esta línea) -->
+    <img class="foto" src="ajjajaja-removebg-preview.png" alt="foto" />
 
     <h1>Be My Valentine🌚💖</h1>
     <p id="nombre">Porfavor cachetona</p>
 
-    <button class="yes" onclick="aceptar()">
-      Sí 💘
-    </button>
-
-    <button class="no" id="noBtn" onmouseover="mover()">
-      No 💩
-    </button>
+    <button class="yes" onclick="aceptar()">Sí 💘</button>
+    <button class="no" id="noBtn" onmouseover="mover()">No 💩</button>
 
     <p id="mensaje" style="display:none;font-size:20px;color:#ff4d6d;font-weight:bold;">
       TE AMO CACHETONA 😍
@@ -99,7 +136,7 @@
   </div>
 
   <script>
-    const NOMBRE_DE_TU_NOVIA = "Cachetona"; //
+    const NOMBRE_DE_TU_NOVIA = "Cachetona";
     document.getElementById("nombre").innerText = "Hola " + NOMBRE_DE_TU_NOVIA + "🌚";
 
     function aceptar(){
@@ -113,6 +150,56 @@
       btn.style.top=(Math.random()*220)+"px";
       btn.style.left=(Math.random()*220)+"px";
     }
+
+    // ===== Corazones flotantes con la foto de la niña =====
+    // 1) Sube al repo una imagen llamada: nina.png (PNG recomendado)
+    // 2) Si tu archivo tiene otro nombre, cámbialo aquí:
+    const FOTO_CORAZON = "ajjajaja-removebg-preview.png";
+
+    const layer = document.getElementById("heartsLayer");
+
+    function spawnHeart(){
+      const h = document.createElement("div");
+      h.className = "photo-heart";
+      h.style.setProperty("--img", `url('${FOTO_CORAZON}')`);
+
+      // tamaño
+      const size = 44 + Math.random()*60; // 44..104
+      h.style.width = size + "px";
+      h.style.height = size + "px";
+
+      // posición inicial
+      h.style.left = (Math.random()*100) + "vw";
+
+      // deriva horizontal
+      const x0 = (Math.random()*60 - 30) + "px";
+      const x1 = (Math.random()*120 - 60) + "px";
+      h.style.setProperty("--x0", x0);
+      h.style.setProperty("--x1", x1);
+
+      // rotación
+      const r0 = (Math.random()*20 - 10) + "deg";
+      const r1 = (Math.random()*30 - 15) + "deg";
+      h.style.setProperty("--r0", r0);
+      h.style.setProperty("--r1", r1);
+
+      // duración
+      const dur = 5 + Math.random()*7; // 5..12s
+      h.style.animationDuration = dur + "s";
+
+      // opacidad
+      h.style.opacity = (0.55 + Math.random()*0.4).toFixed(2);
+
+      layer.appendChild(h);
+      setTimeout(() => h.remove(), dur*1000 + 200);
+    }
+
+    // “burst” inicial
+    for(let i=0;i<12;i++){
+      setTimeout(spawnHeart, i*120);
+    }
+    // continuo
+    setInterval(spawnHeart, 280);
   </script>
 
 </body>
