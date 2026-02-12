@@ -165,6 +165,49 @@
     font-size:13px;
     color: rgba(255,255,255,0.55);
   }
+
+/* ===== Explosión de corazones rosados (post-mensaje) ===== */
+#pinkHeartsLayer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:10000; /* encima de la pantalla final */
+  display:none;
+}
+#pinkHeartsLayer.active{ display:block; }
+
+.pink-heart{
+  position:absolute;
+  width:18px;
+  height:18px;
+  transform: rotate(45deg);
+  opacity:0;
+  background: rgba(255, 105, 180, 0.95);
+  filter: drop-shadow(0 8px 14px rgba(255,105,180,.35));
+  animation: pinkBurst 1.1s ease-out forwards, pinkFall linear forwards;
+}
+.pink-heart::before,
+.pink-heart::after{
+  content:"";
+  position:absolute;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background: rgba(255, 105, 180, 0.95);
+}
+.pink-heart::before{ left:-9px; top:0; }
+.pink-heart::after{ left:0; top:-9px; }
+
+@keyframes pinkBurst{
+  0%   { transform: translate(var(--x0), var(--y0)) rotate(45deg) scale(0.2); opacity:0; }
+  15%  { opacity:1; }
+  100% { transform: translate(var(--x1), var(--y1)) rotate(var(--rot)) scale(var(--sc)); opacity:1; }
+}
+@keyframes pinkFall{
+  from { top: var(--t0); }
+  to   { top: calc(var(--t0) + 120vh); opacity:0; }
+}
 </style>
 </head>
 
@@ -204,6 +247,11 @@
     document.getElementById("heartsLayer").style.opacity = "0";
     document.getElementById("finalText").innerText = FINAL_TEXT;
     document.getElementById("finalScreen").classList.add("active");
+  
+    // 30 segundos después de mostrar el mensaje final: explosión de corazones rosados
+    setTimeout(() => {
+      startPinkHeartsExplosion();
+    }, 30000);
   }, 5000);
 }
 
@@ -213,6 +261,80 @@
       btn.style.top=(Math.random()*220)+"px";
       btn.style.left=(Math.random()*220)+"px";
     }
+
+    
+// ===== Explosión de corazones rosados (después del mensaje final) =====
+const pinkLayer = document.getElementById("pinkHeartsLayer");
+let pinkExplosionTimer = null;
+
+function spawnPinkHeart(){
+  const h = document.createElement("div");
+  h.className = "pink-heart";
+
+  // posición inicial (cerca de donde "nace" el corazón)
+  const left = Math.random()*100;
+  const t0 = (-10 + Math.random()*20) + "vh";  // arranca un poco arriba/centro para que se vea "explosión"
+
+  // trayectoria explosiva
+  const x0 = (Math.random()*20 - 10) + "px";
+  const y0 = (Math.random()*20 - 10) + "px";
+  const x1 = (Math.random()*500 - 250) + "px";
+  const y1 = (Math.random()*-420 - 80) + "px";
+
+  const rot = (Math.random()*160 - 80) + "deg";
+  const sc  = (0.7 + Math.random()*1.25).toFixed(2);
+
+  h.style.left = left + "vw";
+  h.style.setProperty("--t0", t0);
+  h.style.setProperty("--x0", x0);
+  h.style.setProperty("--y0", y0);
+  h.style.setProperty("--x1", x1);
+  h.style.setProperty("--y1", y1);
+  h.style.setProperty("--rot", rot);
+  h.style.setProperty("--sc", sc);
+
+  // tamaño
+  const size = 14 + Math.random()*18;
+  h.style.width = size + "px";
+  h.style.height = size + "px";
+  h.style.setProperty("--size", size + "px");
+  h.style.setProperty("--t0", t0);
+  h.style.opacity = "1";
+
+  // caída (después del burst)
+  const fallDur = (2.6 + Math.random()*2.4).toFixed(2); // 2.6..5s
+  h.style.animationDuration = `1.1s, ${fallDur}s`;
+  h.style.animationDelay = `0s, 1.05s`;
+
+  pinkLayer.appendChild(h);
+  setTimeout(() => h.remove(), (1.1 + float(fallDur) + 0.2)*1000);
+
+  function float(v){ try{ return parseFloat(v); }catch(e){ return 3; } }
+}
+
+function startPinkHeartsExplosion(){
+  // por si ya se activó antes
+  if(pinkExplosionTimer) { clearTimeout(pinkExplosionTimer); pinkExplosionTimer = null; }
+  pinkLayer.classList.add("active");
+
+  // “explosión” intensa al inicio
+  const burstCount = 120;
+  for(let i=0;i<burstCount;i++){
+    setTimeout(spawnPinkHeart, i*12);
+  }
+
+  // un poquito de “afterglow” breve (opcional)
+  let after = 0;
+  const afterInterval = setInterval(() => {
+    spawnPinkHeart();
+    after++;
+    if(after > 80){
+      clearInterval(afterInterval);
+      // deja la capa activa un ratito más por si quedan corazones cayendo
+      setTimeout(() => pinkLayer.classList.remove("active"), 3500);
+    }
+  }, 35);
+}
 
     // ===== Corazones flotantes con la foto de la niña =====
     // 1) Sube al repo una imagen llamada: nina.png (PNG recomendado)
@@ -274,5 +396,9 @@
     <div class="hint">CHICHI</div>
   </div>
 </div>
+
+  <!-- Explosión de corazones rosados -->
+  <div id="pinkHeartsLayer" aria-hidden="true"></div>
+
 </body>
 </html>
